@@ -1,1 +1,1 @@
-# sw-boomicicd-1.2
+# sw-boomicicd
