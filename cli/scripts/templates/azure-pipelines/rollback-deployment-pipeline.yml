@@ -1,63 +1,64 @@
 # https://aka.ms/yaml
 
-# Parameters
-# processName - Boomi process name
-# atomName - the name of the atom as specified in Boomi Atom Management
-# enabled - "true" for enabling the process, "false" for disabling the process
 parameters:
+- name: env
+  type: string
 
-
-- name: atomName
+- name: componentName
   type: string
   default: ""
-
-
-- name: processName
+  
+- name: componentType
   type: string
-  default: ""
+  default: 'process'
 
-
-- name: enabled
+- name: currentPackageVersion
   type: string
-  default: "false"
+
+- name: targetPackageVersion
+  type: string
+
+- name: listenerStatus
+  type: string
+  default: "RUNNING"
 
 variables:
 - group: boomicicd
 
 # need a new image with SonarRunner and xmllint (libxml2-utils) and jq
-
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+
 - script: |
     cd cli/scripts
-    # This set the variables used in Azure DevOps pipeline.
     # Mostly constants
     export h1="$(h1)"
     export h2="$(h2)"
     export WORKSPACE=$(pwd)
-
     # Get values from user or parameter store
-    # The following credentials can be stored in parameter store and retrieved dynamically
+    # The following credentials can be stored in parameter store and retrieved dynamically 
     # Example to retrieve form an AWS store "$(aws ssm get-parameter --region xx --with-decryption --output text --query Parameter.Value --name /Parameter.name)
     export accountName="$(accountName)"
     export accountId=$(accountId)
     export authToken=$(authToken)
-
+    
     # Keys that can change
     export VERBOSE="$(VERBOSE)" # Bash verbose output; set to true only for testing, will slow execution.
     export SLEEP_TIMER="$(SLEEP_TIMER)" # Delays curl request to the platform to set the rate under 5 requests/second
-
+    
     # Derived keys
     export baseURL=https://api.boomi.com/api/rest/v1/$accountId
+    export regressionTestURL="$(regressionTestURL)" # URL for regression test suite framework.
     echo "Base URL is ${baseURL}"
 
-    source bin/updateProcessScheduleStatus.sh\
-      atomName="${{ parameters.atomName }}"\
-      processName="${{ parameters.processName }}" \
-      enabled=${{ parameters.enabled }}
+    source bin/rollbackDeployment.sh env="Development" componentName="Hello" componentType="process" currentPackageVersion="5.2" targetPackageVersion="5.1" listenerStatus="RUNNING"
+     env="${{ parameters.env}}" \
+     componentName="${{ parameters.componentName }}" \
+     componentType="${{ parameters.componentType }}" \
+     currentPackageVersion="${{ parameters.currentPackageVersion }}" \
+     targetPackageVersion="${{ parameters.targetPackageVersion }}" \
+     listenerStatus="${{ parameters.listenerStatus}}"
 
-  displayName: 'Disable, Enable Process Schedule'
-
-
+  displayName: 'Boomi Deploy Package'

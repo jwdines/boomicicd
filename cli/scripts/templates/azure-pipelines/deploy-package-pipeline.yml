@@ -13,17 +13,9 @@ parameters:
   type: string
   default: ""
   
-- name: componentId
-  type: string
-  default: ""
-
 - name: componentType
   type: string
   default: 'process'
-
-- name: componentVersion
-  type: string
-  default: 'NA'
 
 - name: notes
   type: string
@@ -72,9 +64,7 @@ steps:
     source bin/deployPackage.sh \
       env="${{ parameters.env}}" \
       processName="${{ parameters.processName }}" \
-      componentId="${{ parameters.componentId }}" \
-      componentType=${{ parameters.componentType }} \
-      componentVersion=${{ parameters.componentVersion }} \
+      componentType="${{ parameters.componentType }}" \
       packageVersion="${{ parameters.packageVersion }}" \
       notes="${{ parameters.notes }}" \
       listenerStatus=${{ parameters.listenerStatus }}
